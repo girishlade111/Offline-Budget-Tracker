@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#4CAF50">
+    <title>Offline Budget Tracker</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="images/icons/icon-72x72.png">
+    <link rel="apple-touch-icon" href="images/icons/icon-192x192.png">
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #2196F3;
+            --danger-color: #f44336;
+            --warning-color: #ff9800;
+            --text-color: #333;
+            --light-bg: #f5f5f5;
+            --dark-bg: #333;
+            --card-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px 0;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        nav {
+            background-color: white;
+            box-shadow: var(--card-shadow);
+        }
+
+        .nav-list {
+            display: flex;
+            list-style: none;
+            overflow-x: auto;
+        }
+
+        .nav-item {
+            padding: 15px;
+            flex: 1;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            white-space: nowrap;
+        }
+
+        .nav-item.active {
+            background-color: var(--light-bg);
+            border-bottom: 3px solid var(--primary-color);
+            font-weight: bold;
+        }
+
+        .nav-item:hover {
+            background-color: var(--light-bg);
+        }
+
+        .page {
+            display: none;
+            padding: 20px 0;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .balance-card {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .balance-title {
+            font-size: 16px;
+            color: #666;
+        }
+
+        .balance-amount {
+            font-size: 36px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .summary-card {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .income {
+            color: var(--primary-color);
+        }
+
+        .expense {
+            color: var(--danger-color);
+        }
+
+        .btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .fab {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            z-index: 10;
+            cursor: pointer;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            overflow: auto;
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        .close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .transaction-list {
+            list-style: none;
+        }
+
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+
+        .transaction-item:hover {
+            background-color: #f9f9f9;
+        }
+
+        .transaction-details {
+            flex: 1;
+        }
+
+        .transaction-category {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            background-color: #eee;
+            margin-right: 10px;
+        }
+
+        .transaction-amount {
+            font-weight: bold;
+        }
+
+        .transaction-amount.income {
+            color: var(--primary-color);
+        }
+
+        .transaction-amount.expense {
+            color: var(--danger-color);
+        }
+
+        .transaction-date {
+            color: #666;
+            font-size: 12px;
+        }
+
+        .filter-bar {
+            display: flex;
+            margin-bottom: 20px;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+
+        .filter-item {
+            padding: 8px 15px;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .filter-item.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .budget-progress {
+            margin: 10px 0;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background-color: #eee;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--primary-color);
+            transition: width 0.3s ease;
+        }
+
+        .progress-fill.warning {
+            background-color: var(--warning-color);
+        }
+
+        .progress-fill.danger {
+            background-color: var(--danger-color);
+        }
+
+        .budget-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chart-container {
+            height: 300px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pie-chart {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: conic-gradient(
+                var(--primary-color) 0% 30%, 
+                var(--secondary-color) 30% 60%, 
+                var(--danger-color) 60% 80%, 
+                var(--warning-color) 80% 100%
+            );
+            margin: 20px auto;
+        }
+
+        .bar-chart {
+            width: 100%;
+            height: 200px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+        }
+
+        .bar {
+            width: 30px;
+            background-color: var(--primary-color);
+            border-radius: 3px 3px 0 0;
+            transition: height 0.3s;
+        }
+
+        .bar.expense {
+            background-color: var(--danger-color);
+        }
+
+        .category-list {
+            list-style: none;
+        }
+
+        .category-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .category-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .category-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .settings-group {
+            margin-bottom: 30px;
+        }
+
+        .settings-title {
+            font-size: 18px;
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #eee;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .summary-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Chart Legend */
+        .chart-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-right: 15px;
+        }
+
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            border-radius: 3px;
+            margin-right: 5px;
+        }
+
+        /* Budget item */
+        .budget-item {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .budget-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .budget-category {
+            font-weight: bold;
+        }
+
+        .budget-amount {
+            font-weight: bold;
+        }
+
+        .budget-period {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .budget-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .budget-edit, .budget-delete {
+            cursor: pointer;
+            color: #666;
+        }
+
+        .budget-edit:hover, .budget-delete:hover {
+            color: var(--primary-color);
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 25px;
+            background-color: #333;
+            color: white;
+            border-radius: 5px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .notification.show {
+            opacity: 1;
+        }
+
+        /* Loader */
+        .loader {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255,255,255,0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loader-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid var(--light-bg);
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: #666;
+        }
+
+        .empty-state p {
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="loader">
+        <div class="loader-spinner"></div>
+    </div>
+
+    <header>
+        <h1>Budget Tracker</h1>
+    </header>
+    
+    <nav>
+        <ul class="nav-list">
+            <li class="nav-item active" data-page="dashboard">Dashboard</li>
+            <li class="nav-item" data-page="transactions">Transactions</li>
+            <li class="nav-item" data-page="budgets">Budgets</li>
+            <li class="nav-item" data-page="reports">Reports</li>
+            <li class="nav-item" data-page="categories">Categories</li>
+            <li class="nav-item" data-page="settings">Settings</li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <!-- Dashboard Page -->
+        <div id="dashboard" class="page active">
+            <div class="card balance-card">
+                <div class="balance-title">Current Balance</div>
+                <div class="balance-amount" id="totalBalance">$0.00</div>
+                <div>
+                    <span class="income" id="totalIncome">$0.00</span> income, 
+                    <span class="expense" id="totalExpense">$0.00</span> expenses
+                </div>
+            </div>
+
+            <div class="summary-cards">
+                <div class="card summary-card">
+                    <h3>This Month</h3>
+                    <div class="balance-amount" id="monthBalance">$0.00</div>
+                    <div>
+                        <span class="income" id="monthIncome">$0.00</span> income, 
+                        <span class="expense" id="monthExpense">$0.00</span> expenses
+                    </div>
+                </div>
+                <div class="card summary-card">
+                    <h3>This Week</h3>
+                    <div class="balance-amount" id="weekBalance">$0.00</div>
+                    <div>
+                        <span class="income" id="weekIncome">$0.00</span> income, 
+                        <span class="expense" id="weekExpense">$0.00</span> expenses
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Budget Overview</h2>
+                <div id="budgetOverview">
+                    <!-- Budget progress bars will be added here dynamically -->
+                    <div class="empty-state" id="emptyBudgetState">
+                        <p>No budgets set up yet.</p>
+                        <button class="btn btn-primary" id="dashboardAddBudgetBtn">Add Your First Budget</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="budget-header">
+                    <h2>Recent Transactions</h2>
+                    <button class="btn btn-secondary" id="viewAllTransactionsBtn">View All</button>
+                </div>
+                <div id="recentTransactionsContainer">
+                    <ul class="transaction-list" id="recentTransactionsList">
+                        <!-- Recent transactions will be added here dynamically -->
+                    </ul>
+                    <div class="empty-state" id="emptyTransactionsState">
+                        <p>No transactions yet.</p>
+                        <button class="btn btn-primary" id="dashboardAddTransactionBtn">Add Your First Transaction</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transactions Page -->
+        <div id="transactions" class="page">
+            <div class="filter-bar">
+                <div class="filter-item active" data-filter="all">All</div>
+                <div class="filter-item" data-filter="income">Income</div>
+                <div class="filter-item" data-filter="expense">Expenses</div>
+                <div class="filter-item" data-filter="date">Sort by Date</div>
+                <div class="filter-item" data-filter="amount">Sort by Amount</div>
+            </div>
+            
+            <div class="card">
+                <div id="allTransactionsContainer">
+                    <ul class="transaction-list" id="allTransactionsList">
+                        <!-- All transactions will be added here dynamically -->
+                    </ul>
+                    <div class="empty-state" id="emptyAllTransactionsState">
+                        <p>No transactions yet.</p>
+                        <button class="btn btn-primary" id="pageAddTransactionBtn">Add Your First Transaction</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Budgets Page -->
+        <div id="budgets" class="page">
+            <div class="card">
+                <div class="budget-header">
+                    <h2>Budget Settings</h2>
+                    <button class="btn btn-primary" id="addBudgetBtn">Add Budget</button>
+                </div>
+                <div id="budgetsContainer">
+                    <div id="budgetsList">
+                        <!-- Budget items will be added here dynamically -->
+                    </div>
+                    <div class="empty-state" id="emptyBudgetsState">
+                        <p>No budgets set up yet.</p>
+                        <button class="btn btn-primary" id="emptyAddBudgetBtn">Add Your First Budget</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reports Page -->
+        <div id="reports" class="page">
+            <div class="filter-bar">
+                <div class="filter-item active" data-report="monthly">Monthly</div>
+                <div class="filter-item" data-report="category">By Category</div>
+                <div class="filter-item" data-report="trends">Trends</div>
+            </div>
+            
+            <div class="card">
+                <h2 id="reportTitle">Monthly Report</h2>
+                <div class="chart-container" id="reportChart">
+                    <!-- Chart will be rendered here -->
+                    <div class="bar-chart" id="barChart">
+                        <!-- Bars will be added programmatically -->
+                    </div>
+                    <div class="pie-chart" id="pieChart" style="display: none;"></div>
+                </div>
+                <div class="chart-legend" id="chartLegend">
+                    <!-- Chart legend will be added here dynamically -->
+                </div>
+                <div class="empty-state" id="emptyReportsState">
+                    <p>No data available for reports.</p>
+                    <button class="btn btn-primary" id="reportsAddTransactionBtn">Add Transactions to See Reports</button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>Report Summary</h2>
+                <div id="reportSummary">
+                    <!-- Report summary will be added here dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Categories Page -->
+        <div id="categories" class="page">
+            <div class="card">
+                <div class="budget-header">
+                    <h2>Manage Categories</h2>
+                    <button class="btn btn-primary" id="addCategoryBtn">Add Category</button>
+                </div>
+                <div id="categoriesContainer">
+                    <ul class="category-list" id="categoriesList">
+                        <!-- Categories will be added here dynamically -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Page -->
+        <div id="settings" class="page">
+            <div class="card">
+                <div class="settings-group">
+                    <h2 class="settings-title">General Settings</h2>
+                    <div class="form-group">
+                        <label for="currencySelect">Currency</label>
+                        <select id="currencySelect">
+                            <option value="USD">USD ($)</option>
+                            <option value="EUR">EUR (€)</option>
+                            <option value="GBP">GBP (£)</option>
+                            <option value="JPY">JPY (¥)</option>
+                            <option value="CNY">CNY (¥)</option>
+                            <option value="INR">INR (₹)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="dateFormatSelect">Date Format</label>
+                        <select id="dateFormatSelect">
+                            <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                            <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                            <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="settings-group">
+                    <h2 class="settings-title">Data Management</h2>
+                    <div class="form-group">
+                        <button class="btn btn-secondary" id="exportDataBtn">Export Data</button>
+                    </div>
+                    <div class="form-group">
+                        <button class="btn btn-secondary" id="importDataBtn">Import Data</button>
+                        <input type="file" id="importFileInput" accept=".json" style="display: none;">
+                    </div>
+                    <div class="form-group">
+                        <button class="btn btn-danger" id="clearDataBtn">Clear All Data</button>
+                    </div>
+                </div>
+                
+                <div class="settings-group">
+                    <h2 class="settings-title">About</h2>
+                    <p>Offline Budget Tracker v1.0</p>
+                    <p>A completely offline-capable budget tracking application.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Transaction Floating Action Button -->
+    <div class="fab" id="addTransactionBtn">+</div>
+
+    <!-- Add Transaction Modal -->
+    <div id="transactionModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeTransactionModal">&times;</span>
+            <h2 id="transactionModalTitle">Add Transaction</h2>
+            <form id="transactionForm">
+                <input type="hidden" id="transactionId">
+                <div class="form-group">
+                    <label for="transactionType">Type</label>
+                    <select id="transactionType" required>
+                        <option value="income">Income</option>
+                        <option value="expense">Expense</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="transactionAmount">Amount</label>
+                    <input type="number" id="transactionAmount" step="0.01" min="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="transactionCategory">Category</label>
+                    <select id="transactionCategory" required>
+                        <!-- Categories will be added here dynamically -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="transactionDate">Date</label>
+                    <input type="date" id="transactionDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="transactionNotes">Notes (Optional)</label>
+                    <textarea id="transactionNotes" rows="3"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" id="saveTransactionBtn">Save Transaction</button>
+                <button type="button" class="btn btn-danger" id="deleteTransactionBtn" style="display: none;">Delete Transaction</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Category Modal -->
+    <div id="categoryModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeCategoryModal">&times;</span>
+            <h2 id="categoryModalTitle">Add Category</h2>
+            <form id="categoryForm">
+                <input type="hidden" id="categoryId">
+                <div class="form-group">
+                    <label for="categoryName">Name</label>
+                    <input type="text" id="categoryName" required>
+                </div>
+                <div class="form-group">
+                    <label for="categoryType">Type</label>
+                    <select id="categoryType" required>
+                        <option value="income">Income</option>
+                        <option value="expense">Expense</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="categoryColor">Color</label>
+                    <input type="color" id="categoryColor" required>
+                </div>
+                <button type="submit" class="btn btn-primary" id="saveCategoryBtn">Save Category</button>
+                <button type="button" class="btn btn-danger" id="deleteCategoryBtn" style="display: none;">Delete Category</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Budget Modal -->
+    <div id="budgetModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeBudgetModal">&times;</span>
+            <h2 id="budgetModalTitle">Add Budget</h2>
+            <form id="budgetForm">
+                <input type="hidden" id="budgetId">
+                <div class="form-group">
+                    <label for="budgetCategory">Category</label>
+                    <select id="budgetCategory" required>
+                        <!-- Expense categories will be added here dynamically -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="budgetAmount">Budget Amount</label>
+                    <input type="number" id="budgetAmount" step="0.01" min="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="budgetPeriod">Period</label>
+                    <select id="budgetPeriod" required>
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly" selected>Monthly</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary" id="saveBudgetBtn">Save Budget</button>
+                <button type="button" class="btn btn-danger" id="deleteBudgetBtn" style="display: none;">Delete Budget</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmationModal" class="modal">
+        <div class="modal-content">
+            <h2>Confirmation</h2>
+            <p id="confirmationMessage">Are you sure you want to proceed?</p>
+            <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+                <button class="btn btn-secondary" id="cancelConfirmationBtn">Cancel</button>
+                <button class="btn btn-danger" id="confirmActionBtn">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Element -->
+    <div class="notification" id="notification"></div>
+
+    <footer>
+        <p>Budget Tracker | Powered by PWA Technology</p>
+    </footer>
+
+    <script>
+        // IndexedDB Database Setup
+        let db;
+        const DB_NAME = 'BudgetTrackerDB';
+        const DB_VERSION = 1;
+        const STORES = {
+            TRANSACTIONS: 'transactions',
+            CATEGORIES: 'categories',
+            BUDGETS: 'budgets',
+            SETTINGS: 'settings'
+        };
+
+        // Default Categories
+        const DEFAULT_CATEGORIES = [
+            { id: 1, name: 'Salary', type: 'income', color: '#4CAF50' },
+            { id: 2, name: 'Freelance', type: 'income', color: '#2196F3' },
+            { id: 3, name: 'Gift', type: 'income', color: '#9C27B0' },
+            { id: 4, name: 'Food', type: 'expense', color: '#F44336' },
+            { id: 5, name: 'Transportation', type: 'expense', color: '#FF9800' },
+            { id: 6, name: 'Utilities', type: 'expense', color: '#795548' },
+            { id: 7, name: 'Rent', type: 'expense', color: '#607D8B' },
+            { id: 8, name: 'Entertainment', type: 'expense', color: '#E91E63' },
+            { id: 9, name: 'Shopping', type: 'expense', color: '#9E9E9E' },
+            { id: 10, name: 'Healthcare', type: 'expense', color: '#009688' }
+        ];
+
+        // App State
+        let currentTransactionFilter = 'all';
+        let currentReportType = 'monthly';
+        let appSettings = {
+            currency: 'USD',
+            dateFormat: 'MM/DD/YYYY'
+        };
+        let categories = [];
+        let transactions = [];
+        let budgets = [];
+        let activeAction = null; // For confirmation

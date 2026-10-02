@@ -1,49 +1,59 @@
 # Offline Budget Tracker
 
-A **100% offline, single-file budget tracker** web app — no server, no login, no build step. Track income and expenses, organize spending by category, set budgets, and view monthly reports, all stored locally in your browser.
+A free, offline-first personal budget tracker that runs entirely in your browser — no account, no server, no internet required. Track income and expenses, organize them into categories, set budgets per category and period, and visualize spending with built-in charts.
 
 ## Features
 
-- 💰 **Transaction tracking** — log income and expenses with categories and notes
-- 📊 **Category budgets** — set spending limits per category with visual progress
-- 📈 **Monthly reports** — spending breakdowns and trends by month
-- ⚙️ **Settings** — currency and date-format preferences
-- 🔒 **Fully offline** — all data stays in `localStorage` on your device; works without internet
-- 📱 **PWA-ready** — includes manifest and icon hooks (add your own `manifest.json` + icons)
+- **Add transactions** — record income and expense transactions with amount, category, and date
+- **Custom categories** — create income/expense categories with custom colors
+- **Budgets** — set budget limits per category and period (weekly / monthly / yearly)
+- **Budget overview dashboard** — see at a glance how much of each budget is spent vs remaining
+- **Spending charts** — bar chart visualization of spending with a color-coded legend
+- **Transaction history** — full list of all transactions with edit/delete support
+- **100% offline** — single self-contained HTML file; all data stored in the browser via IndexedDB
+- **Privacy-first** — your data never leaves your device; clear-data option built in
 
-## Tech Stack
+## Tech stack
 
-- Single self-contained HTML file (`index.html`)
-- Vanilla CSS (custom properties, responsive layout) + vanilla JavaScript
-- Web Storage API (`localStorage`) for persistence
-- No dependencies, no build tools
+- Vanilla HTML + CSS + JavaScript — zero dependencies, no build step
+- IndexedDB for local persistence
+- Canvas-based charts (no chart library needed)
 
-## Project Structure
+## Quick start
 
-```
-index.html   — the entire app (HTML + CSS + JS in one file)
-LICENSE      — license
-```
-
-## Getting Started
-
-Just open the live site, or run it locally:
+Open `index.html` in any modern browser — that's it. No server, no install.
 
 ```bash
-# any static server works, e.g.
-npx serve .
+# optionally serve locally
+python3 -m http.server 8000
+# then visit http://localhost:8000
 ```
 
-Or simply double-click `index.html` — it runs offline.
+To publish: this repo is a plain static site and is deployed via GitHub Pages.
 
-## Deploy Notes
+## Project structure
 
-Deployed on **GitHub Pages** (branch `main`, root path). Any static host works — there's no build step.
+```
+Offline-Budget-Tracker/
+├── index.html                  # the entire app (single file, no dependencies)
+├── "Offline Budget Tracker html"  # original single-file source
+├── README.md
+└── LICENSE
+```
 
-## License
+## Data & storage
 
-See [LICENSE](./LICENSE).
+All records (transactions, categories, budgets) live in your browser's IndexedDB under this site's origin. Nothing is uploaded anywhere. Use the in-app **Clear Data** option to wipe everything.
 
----
+## Roadmap / ideas
 
-**Built by [Girish Lade](https://ladestack.in)** — solo founder of [LadeStack](https://ladestack.in).
+- [ ] Export / import data (CSV / JSON backup)
+- [ ] Recurring transactions
+- [ ] Multi-currency support
+- [ ] Monthly summary reports
+
+## 👤 Author & Maintainer
+
+**Built by Girish Lade**  
+- GitHub: [@girishlade111](https://github.com/girishlade111)
+- Portfolio: [ladestack.in](https://ladestack.in)
